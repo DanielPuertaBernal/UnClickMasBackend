@@ -1,18 +1,18 @@
 export default {
-  async createUser(pool, { Name, Email, UserName, Password }) {
+  async createUser(pool, { name, email, username, password }) {
     const query = `
-      INSERT INTO "Users" ("Name", "Email", "UserName", "Password")
-      VALUES ($1, $2, $3, $4)
-      RETURNING "Id", "Name", "Email", "UserName";
+      insert into "users" ("name", "email", "username", "password")
+      values ($1, $2, $3, $4)
+      returning "id", "name", "email", "username";
     `;
-    const values = [Name, Email, UserName, Password];
+    const values = [name, email, username, password];
     const { rows } = await pool.query(query, values);
     return rows[0];
   },
 
   async findByEmailOrUserName(pool, identifier) {
     const query = `
-      SELECT * FROM "Users" WHERE "Email" = $1 OR "UserName" = $1;
+      select * from "users" where "email" = $1 or "username" = $1;
     `;
     const { rows } = await pool.query(query, [identifier]);
     return rows[0];
@@ -20,10 +20,10 @@ export default {
 
   async updatePoints(pool, userId, points) {
     const query = `
-      UPDATE "Users"
-      SET "TotalPoints" = "TotalPoints" + $1
-      WHERE "Id" = $2
-      RETURNING "UserName", "TotalPoints";
+      update "users"
+      set "totalpoints" = "totalpoints" + $1
+      where "id" = $2
+      returning "username", "totalpoints";
     `;
     const { rows } = await pool.query(query, [points, userId]);
     return rows[0];
@@ -31,9 +31,9 @@ export default {
 
   async getLeaderboard(pool) {
     const query = `
-      SELECT "UserName", "TotalPoints"
-      FROM "Users"
-      ORDER BY "TotalPoints" DESC;
+      select "username", "totalpoints"
+      from "users"
+      order by "totalpoints" desc;
     `;
     const { rows } = await pool.query(query);
     return rows;
