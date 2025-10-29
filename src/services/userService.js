@@ -5,8 +5,11 @@ import { pool } from "../config/db.js";
 
 export const userService = {
   async register(data) {
-    const existing = await userModel.findByEmailOrUserName(pool, data.email);
-    if (existing) throw new Error("Usuario o email ya registrado");
+    const existingEmail = await userModel.findByEmailOrUserName(pool, data.email);
+    if (existingEmail) throw new Error("Email ya registrado");
+
+    const existingUsername = await userModel.findByEmailOrUserName(pool, data.username);
+    if (existingUsername) throw new Error("Nombre de usuario ya registrado");
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
     return userModel.createUser(pool, { ...data, password: hashedPassword });
@@ -20,12 +23,12 @@ export const userService = {
     if (!valid) throw new Error("Contraseña incorrecta");
 
     const token = jwt.sign(
-      { userId: user.id, username: user.username },
+      { userId: user.id, username: user.username, totalpoints: user.totalpoints },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRATION }
     );
 
-    return { token, user: { id: user.id, username: user.username, totalPoints: user.totalPoints } };
+    return { token, user: { id: user.id, username: user.username, totalpoints: user.totalpoints } };
   },
 
   async addPoints(userId, points) {
